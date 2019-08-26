@@ -5,18 +5,23 @@ using TMPro;
 
 public class DialogManager : MonoBehaviour
 {
+    Canvas dialogCanvas;
+
     [SerializeField] TextMeshProUGUI textDisplay;
     [SerializeField] string[] dialog;
     int dialogIndex;
+    int textSpeed;
 
-    enum TextSpeed
-    {
-        Fast,
-        Medium,
-        Slow
-    }
-    [SerializeField] TextSpeed textSpeed;
     IEnumerator textPrintCoroutine;
+
+    void Awake()
+    {
+        dialogCanvas = GetComponent<Canvas>();
+
+        //init. <textSpeed> to PlayerPrefs
+        //PlayerPrefs updated in SettingsMenu.cs
+        textSpeed = PlayerPrefs.GetInt("textSpeed");
+    }
 
     void Start()
     {
@@ -30,7 +35,7 @@ public class DialogManager : MonoBehaviour
         foreach (char character in dialog[dialogIndex].ToCharArray())
         {
             textDisplay.text += character;
-            yield return new WaitForSeconds(((int)textSpeed + 1) * 0.02f);
+            yield return new WaitForSeconds((textSpeed + 1) * 0.02f);
         }
     }
 
@@ -67,6 +72,7 @@ public class DialogManager : MonoBehaviour
                 {
                     //reset text once dialog has completed
                     textDisplay.text = "";
+                    dialogCanvas.enabled = false;
                 }
             }
         }

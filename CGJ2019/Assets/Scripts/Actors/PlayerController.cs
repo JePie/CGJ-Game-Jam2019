@@ -53,6 +53,7 @@ public class PlayerController : Actor
 
     void FixedUpdate()
     {
+        HandleMovementInput();
         rb2d.velocity = currentVelocity;
     }
 }

@@ -8,6 +8,12 @@ public class PlayerController : Actor
     const float fallSpeedMultiplier = 2f;
     const float maxFallSpeed = -20f;                //used to clamp fall speed in case this object falls from too high
 
+    bool canDash = true;
+    const float dashDuration = 0.25f;
+    const float dashSpeed = 400f;
+    IEnumerator dashCoroutine;
+    float lastHorizontalInput;                       //technically a Vector1, used for dashing without a horizontal input
+
     protected override void Update()
     {
         base.Update();
@@ -17,8 +23,17 @@ public class PlayerController : Actor
     void HandleMovementInput()
     {
         //update horizontal movement
-        currentVelocity.x = Input.GetAxisRaw("Horizontal");
-        
+        if (dashCoroutine == null)
+        {
+            currentVelocity.x = Input.GetAxisRaw("Horizontal");
+        }
+
+        //update last non-zero horizontal input
+        if (currentVelocity.x != 0f)
+        {
+            lastHorizontalInput = currentVelocity.x;
+        }
+
         //update vertical movement
         if (IsGrounded())
         {
@@ -30,12 +45,38 @@ public class PlayerController : Actor
             {
                 currentVelocity.y += jumpStrength;
             }
+
+            //allow dashing again
+            canDash = true;
         }
         else
         {
-            //increase fall speed over time; make sure y-velocity doesn't go beyond <maxFallSpeed>
-            currentVelocity.y = Mathf.Max(currentVelocity.y + Physics.gravity.y * Time.deltaTime * fallSpeedMultiplier, maxFallSpeed);
+            if (dashCoroutine == null)
+            {
+                //increase fall speed over time; make sure y-velocity doesn't go beyond <maxFallSpeed>
+                currentVelocity.y = Mathf.Max(currentVelocity.y + Physics.gravity.y * Time.deltaTime * fallSpeedMultiplier, maxFallSpeed);
+            }
+            //reset y-velocity to 0 when dashing (resume falling once dash has ended)
+            else
+            {
+                currentVelocity.y = 0;
+            }
         }
+
+        //handle dash input
+        if (Input.GetButtonDown("Dash") && dashCoroutine == null)
+        {
+            dashCoroutine = Dash();
+            StartCoroutine(dashCoroutine);
+        }
+    }
+
+    //actual functionality handled in FixedUpdate()
+    IEnumerator Dash()
+    {
+        canDash = false;
+        yield return new WaitForSeconds(dashDuration);
+        dashCoroutine = null;
     }
 
     //returns true if there is an object in the Ground layer underneath this object; otherwise false
@@ -53,6 +94,14 @@ public class PlayerController : Actor
 
     void FixedUpdate()
     {
+        //movement
         rb2d.velocity = currentVelocity;
+
+        //dashing
+        if (dashCoroutine != null)
+        {
+            Vector2 dashDirection = lastHorizontalInput == 0 ? Vector2.right : (Vector2.right * lastHorizontalInput).normalized;
+            rb2d.AddForce(dashDirection * dashSpeed);
+        }
     }
 }

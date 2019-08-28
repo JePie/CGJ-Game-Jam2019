@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : Actor
 {
+    Animator anim;
+
     const float jumpStrength = 10f;
     const float fallSpeedMultiplier = 2f;
     const float maxFallSpeed = -20f;                //used to clamp fall speed in case this object falls from too high
@@ -14,10 +16,21 @@ public class PlayerController : Actor
     IEnumerator dashCoroutine;
     float lastHorizontalInput;                       //technically a Vector1, used for dashing without a horizontal input
 
+    enum PlayerState
+    {
+        Idle,
+        Walk,
+        Jump,
+        Dash, 
+        Death
+    }
+    PlayerState playerState;
+
     protected override void Update()
     {
         base.Update();
         HandleMovementInput();
+        UpdateAnimator();
     }
 
     void HandleMovementInput()
@@ -90,6 +103,11 @@ public class PlayerController : Actor
 
         RaycastHit2D result = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance, groundLayer);
         return result;
+    }
+
+    void UpdateAnimator()
+    {
+        anim.SetInteger("playerState", (int)playerState);
     }
 
     void FixedUpdate()

@@ -112,11 +112,7 @@ public class PlayerController : Actor
 
     void FixedUpdate()
     {
-<<<<<<< HEAD
-        HandleMovementInput();
-=======
         //movement
->>>>>>> origin/nic's-branch
         rb2d.velocity = currentVelocity;
 
         //dashing

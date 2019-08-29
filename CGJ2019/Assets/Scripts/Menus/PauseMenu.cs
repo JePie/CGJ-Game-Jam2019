@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class PauseMenu : MonoBehaviour
 {
-    //public GameController gameController;
+    [SerializeField] GameController gameController;
     //Resume Button Function buttons (public)
     public void SelectResume()
     {
-        //gameController.SetPausedState(false);
+        gameController.SetPausedState(false);
     }
     //Settings Menu Button Function (public)
     public void SelectSettings(Canvas settingsMenu)

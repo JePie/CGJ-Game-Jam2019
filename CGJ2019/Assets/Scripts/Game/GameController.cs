@@ -50,6 +50,11 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public void RestartLevel()
+    {
+        //
+    }
+
     //immediately pause game if application is unfocused (excluding inside editor)
     void OnApplicationFocus(bool focus)
     {

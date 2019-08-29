@@ -7,7 +7,7 @@ public class MainMenu : MonoBehaviour
     public void SelectPlay()
     {
         //load first level
-        //UnityEngine.SceneManagement.SceneManager.LoadSceneAsync();
+        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Level 1");
     }
 
     public void SelectSettings(Canvas settingsMenu)

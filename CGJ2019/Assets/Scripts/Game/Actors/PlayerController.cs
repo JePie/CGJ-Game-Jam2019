@@ -37,7 +37,10 @@ public class PlayerController : Actor
     protected override void Update()
     {
         base.Update();
-        HandleMovementInput();
+        if (!GameController.paused)
+        {
+            HandleMovementInput();
+        }
         UpdateAnimator();
     }
 

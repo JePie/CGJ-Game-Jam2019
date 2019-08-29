@@ -12,8 +12,10 @@ public class PlayerController : Actor
 
     bool canDash = true;
     const float dashDuration = 0.25f;
+    const float dashCooldown = dashDuration * 2;
     const float dashSpeed = 400f;
-    IEnumerator dashCoroutine;
+    IEnumerator dashCoroutine, dashCooldownCoroutine;
+
     float lastHorizontalInput;                       //technically a Vector1, used for dashing without a horizontal input
 
     enum PlayerState
@@ -21,10 +23,16 @@ public class PlayerController : Actor
         Idle,
         Walk,
         Jump,
-        Dash, 
+        Dash,
         Death
     }
     PlayerState playerState;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        anim = GetComponent<Animator>();
+    }
 
     protected override void Update()
     {
@@ -39,6 +47,9 @@ public class PlayerController : Actor
         if (dashCoroutine == null)
         {
             currentVelocity.x = Input.GetAxisRaw("Horizontal");
+
+            if (currentVelocity.x > 0) { sr.flipX = false; }
+            else if (currentVelocity.x < 0) { sr.flipX = true; }
         }
 
         //update last non-zero horizontal input
@@ -53,17 +64,24 @@ public class PlayerController : Actor
             //reset y-velocity to 0
             currentVelocity.y = 0;
 
+            //allow dashing again
+            canDash = true;
+
             //allow jumping only when grounded
             if (Input.GetButtonDown("Jump"))
             {
                 currentVelocity.y += jumpStrength;
             }
 
-            //allow dashing again
-            canDash = true;
+            if (dashCoroutine == null)
+            {
+                playerState = currentVelocity == Vector2.zero ? PlayerState.Idle : PlayerState.Walk;
+            }
         }
         else
         {
+            playerState = PlayerState.Jump;
+
             if (dashCoroutine == null)
             {
                 //increase fall speed over time; make sure y-velocity doesn't go beyond <maxFallSpeed>
@@ -77,8 +95,9 @@ public class PlayerController : Actor
         }
 
         //handle dash input
-        if (Input.GetButtonDown("Dash") && dashCoroutine == null)
+        if (Input.GetButtonDown("Dash") && dashCooldownCoroutine == null && canDash)
         {
+            playerState = PlayerState.Dash;
             dashCoroutine = Dash();
             StartCoroutine(dashCoroutine);
         }
@@ -87,9 +106,26 @@ public class PlayerController : Actor
     //actual functionality handled in FixedUpdate()
     IEnumerator Dash()
     {
+        //set rigidbody type to Dynamic so that force can be applied to it
+        rb2d.bodyType = RigidbodyType2D.Dynamic;
         canDash = false;
         yield return new WaitForSeconds(dashDuration);
+
+        //reset rigidbody type and <playerState>
+        rb2d.bodyType = RigidbodyType2D.Kinematic;
+        playerState = PlayerState.Idle;
+
+        //start dash cooldown
+        dashCooldownCoroutine = CooldownDash();
+        StartCoroutine(dashCooldownCoroutine);
         dashCoroutine = null;
+    }
+
+    //while this is running, player cannot dash
+    IEnumerator CooldownDash()
+    {
+        yield return new WaitForSeconds(dashCooldown);
+        dashCooldownCoroutine = null;
     }
 
     //returns true if there is an object in the Ground layer underneath this object; otherwise false
@@ -105,6 +141,7 @@ public class PlayerController : Actor
         return result;
     }
 
+    //sync "playerState" parameter in Animator controller to <playerState> in script
     void UpdateAnimator()
     {
         anim.SetInteger("playerState", (int)playerState);

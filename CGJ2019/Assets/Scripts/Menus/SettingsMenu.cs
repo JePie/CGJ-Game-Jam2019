@@ -55,10 +55,17 @@ public class SettingsMenu : MonoBehaviour
         PlayerPrefs.SetInt("textSpeed", textSpeedDropdown.value);
     }
 
-    //called when user presses the back button
+    //called when user presses the back button in the main menu
     public void BackToMainMenu(Canvas mainMenuCanvas)
     {
         mainMenuCanvas.enabled = true;
+        GetComponent<Canvas>().enabled = false;
+    }
+
+    //called when user presses the back button in the game
+    public void BackToPauseMenu(Canvas pauseCanvas)
+    {
+        pauseCanvas.enabled = true;
         GetComponent<Canvas>().enabled = false;
     }
 }

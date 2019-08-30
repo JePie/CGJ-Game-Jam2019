@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     [SerializeField] Canvas[] pauseMenus;
-    public bool paused { get; private set; }
+    public static bool paused { get; private set; }
 
     [SerializeField] 
 
@@ -47,6 +47,7 @@ public class GameController : MonoBehaviour
             {
                 c.enabled = false;
             }
+            Time.timeScale = 1;
         }
     }
 

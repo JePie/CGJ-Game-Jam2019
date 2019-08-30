@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : Actor
 {
+    Collider2D coll;
     Animator anim;
 
     const float jumpStrength = 10f;
@@ -32,6 +33,7 @@ public class PlayerController : Actor
     protected override void Awake()
     {
         base.Awake();
+        coll = GetComponent<Collider2D>();
         anim = GetComponent<Animator>();
     }
 
@@ -121,13 +123,10 @@ public class PlayerController : Actor
     //actual functionality handled in FixedUpdate()
     IEnumerator Dash()
     {
-        //set rigidbody type to Dynamic so that force can be applied to it
-        rb2d.bodyType = RigidbodyType2D.Dynamic;
         canDash = false;
         yield return new WaitForSeconds(dashDuration);
 
-        //reset rigidbody type and <playerState>
-        rb2d.bodyType = RigidbodyType2D.Kinematic;
+        //reset <playerState>
         playerState = PlayerState.Idle;
 
         //start dash cooldown
@@ -148,12 +147,19 @@ public class PlayerController : Actor
     {
         Vector2 rayOrigin = transform.position;
         Vector2 rayDirection = Vector2.down;
-        float marginOfError = 0.01f;            //can be adjusted
-        float rayDistance = GetComponent<Collider2D>().bounds.extents.y + marginOfError;
+        float marginOfError = 0.025f;            //can be adjusted
+        float rayDistance = coll.bounds.extents.y + marginOfError;
         int groundLayer = 1 << LayerMask.NameToLayer("Ground");
 
-        RaycastHit2D result = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance, groundLayer);
-        return result;
+        //adjust rayOrigin to check collider's right edge
+        rayOrigin.x += coll.bounds.size.x / 2;
+        RaycastHit2D rightRay = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance, groundLayer);
+
+        //adjust rayOrigin to check collider's left edge
+        rayOrigin.x -= coll.bounds.size.x;
+        RaycastHit2D leftRay = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance, groundLayer);
+
+        return rightRay || leftRay;
     }
 
     //sync "playerState" parameter in Animator controller to <playerState> in script

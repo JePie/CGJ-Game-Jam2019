@@ -7,7 +7,7 @@ public class Actor : MonoBehaviour
     protected Rigidbody2D rb2d;
     protected SpriteRenderer sr;
 
-    protected float moveSpeed;
+    [SerializeField] protected float moveSpeed;
     protected Vector2 currentVelocity;
 
     protected virtual void Awake()
@@ -15,10 +15,5 @@ public class Actor : MonoBehaviour
         //init. components
         rb2d = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
-    }
-
-    protected virtual void Update()
-    {
-
     }
 }

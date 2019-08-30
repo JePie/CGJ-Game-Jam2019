@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : Actor
 {
@@ -24,7 +25,7 @@ public class PlayerController : Actor
         Walk,
         Jump,
         Dash,
-        Death
+        Dead
     }
     PlayerState playerState;
 
@@ -34,12 +35,23 @@ public class PlayerController : Actor
         anim = GetComponent<Animator>();
     }
 
-    protected override void Update()
+    protected void Update()
     {
-        base.Update();
         if (!GameController.paused)
         {
-            HandleMovementInput();
+            if (playerState != PlayerState.Dead)
+            {
+                HandleMovementInput();
+            }
+            else
+            {
+                currentVelocity = Vector2.zero;
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Die();
         }
         UpdateAnimator();
     }
@@ -49,7 +61,7 @@ public class PlayerController : Actor
         //update horizontal movement
         if (dashCoroutine == null)
         {
-            currentVelocity.x = Input.GetAxisRaw("Horizontal");
+            currentVelocity.x = Input.GetAxisRaw("Horizontal") * moveSpeed;
 
             if (currentVelocity.x > 0) { sr.flipX = false; }
             else if (currentVelocity.x < 0) { sr.flipX = true; }
@@ -161,5 +173,18 @@ public class PlayerController : Actor
             Vector2 dashDirection = lastHorizontalInput == 0 ? Vector2.right : (Vector2.right * lastHorizontalInput).normalized;
             rb2d.AddForce(dashDirection * dashSpeed);
         }
+    }
+
+    //handles death processes
+    public void Die()
+    {
+        playerState = PlayerState.Dead;
+        anim.SetTrigger("playerDead");
+    }
+
+    //called by animator at the end of the death animation
+    void Respawn()
+    {
+        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
     }
 }

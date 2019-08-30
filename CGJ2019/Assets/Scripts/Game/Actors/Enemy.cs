@@ -12,8 +12,11 @@ public class Enemy : Actor
         player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
     }
 
-    protected override void Update()
+    void OnTriggerEnter2D(Collider2D other)
     {
-
+        if (other.GetComponent<PlayerController>() != null)
+        {
+            player.Die();
+        }
     }
 }

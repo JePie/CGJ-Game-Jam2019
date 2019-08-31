@@ -5,7 +5,7 @@ using TMPro;
 
 public class DialogManager : MonoBehaviour
 {
-    Canvas dialogCanvas;
+    public Canvas dialogCanvas { get; private set; }
 
     [SerializeField] TextMeshProUGUI textDisplay;
     [SerializeField] string[] dialog;
@@ -13,6 +13,7 @@ public class DialogManager : MonoBehaviour
     int textSpeed;
 
     IEnumerator textPrintCoroutine;
+    bool hasFinishedDisplaying;
 
     void Awake()
     {
@@ -25,8 +26,11 @@ public class DialogManager : MonoBehaviour
 
     void Start()
     {
-        textPrintCoroutine = PrintText();
-        StartCoroutine(textPrintCoroutine);
+        if (!hasFinishedDisplaying)
+        {
+            textPrintCoroutine = PrintText();
+            StartCoroutine(textPrintCoroutine);
+        }
     }
 
     //appends each character in <dialog[dialogIndex]> one by one, at a speed based on <textSpeed>
@@ -62,7 +66,7 @@ public class DialogManager : MonoBehaviour
                 //if there is more dialog to print
                 if (dialogIndex < dialog.Length - 1)
                 {
-                    //reset text, incrememt <dialogIndex> start printing again
+                    //incrememt <dialogIndex>, reset text display, start printing again
                     dialogIndex++;
                     textDisplay.text = "";
                     textPrintCoroutine = PrintText();
@@ -73,9 +77,10 @@ public class DialogManager : MonoBehaviour
                     //reset text once dialog has completed
                     textDisplay.text = "";
                     dialogCanvas.enabled = false;
+                    hasFinishedDisplaying = true;
+                    GameObject.FindWithTag("Player").GetComponent<PlayerController>().enabled = true;
                 }
             }
         }
     }
-
 }

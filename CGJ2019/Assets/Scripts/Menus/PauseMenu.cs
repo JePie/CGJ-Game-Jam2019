@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class PauseMenu : MonoBehaviour
 {
-    [SerializeField] GameController gameController;
+    GameController gameController;
+
+    void Awake()
+    {
+        gameController = FindObjectOfType<GameController>();
+    }
+
     //Resume Button Function buttons (public)
     public void SelectResume()
     {

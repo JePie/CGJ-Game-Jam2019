@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void SelectPlay()
+    public void SelectPlay(int firstLevelIndex)
     {
+        Time.timeScale = 1;
         //load first level
-        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Level 1");
+        SceneManager.LoadSceneAsync(firstLevelIndex);
     }
 
     public void SelectSettings(Canvas settingsMenu)

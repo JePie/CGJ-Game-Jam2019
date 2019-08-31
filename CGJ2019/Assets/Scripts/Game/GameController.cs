@@ -7,16 +7,16 @@ public class GameController : MonoBehaviour
     [SerializeField] Canvas[] pauseMenus;
     public static bool paused { get; private set; }
 
-    [SerializeField] 
+    DialogManager dm;
 
-    void Start()
+    void Awake()
     {
-
+        dm = FindObjectOfType<DialogManager>();
     }
     
     void Update()
     {
-        HandlePauseInput();
+        if (!dm.dialogCanvas.enabled) { HandlePauseInput(); }
     }
 
     void HandlePauseInput()
@@ -51,18 +51,13 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void RestartLevel()
-    {
-        //
-    }
-
     //immediately pause game if application is unfocused (excluding inside editor)
     void OnApplicationFocus(bool focus)
     {
 #if !UNITY_EDITOR
         if (!focus)
         {
-            SetPauseState(true);
+            if (!dm.dialogCanvas.enabled) { SetPausedState(true); }
         }
 #endif
     }

@@ -5,12 +5,13 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : Actor
 {
-    Collider2D coll;
+    EdgeCollider2D coll;
     Animator anim;
+    DialogManager dm;
 
     const float jumpStrength = 10f;
     const float fallSpeedMultiplier = 2f;
-    const float maxFallSpeed = -20f;                //used to clamp fall speed in case this object falls from too high
+    const float maxFallSpeed = -10f;                //used to clamp fall speed in case this object falls from too high
 
     bool canDash = true;
     const float dashDuration = 0.25f;
@@ -33,8 +34,9 @@ public class PlayerController : Actor
     protected override void Awake()
     {
         base.Awake();
-        coll = GetComponent<Collider2D>();
+        coll = GetComponent<EdgeCollider2D>();
         anim = GetComponent<Animator>();
+        dm = FindObjectOfType<DialogManager>();
     }
 
     protected void Update()
@@ -85,7 +87,7 @@ public class PlayerController : Actor
             canDash = true;
 
             //allow jumping only when grounded
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButton("Jump"))
             {
                 currentVelocity.y += jumpStrength;
             }
@@ -147,17 +149,19 @@ public class PlayerController : Actor
     {
         Vector2 rayOrigin = transform.position;
         Vector2 rayDirection = Vector2.down;
-        float marginOfError = 0.025f;            //can be adjusted
+        float marginOfError = 0.02f;            //can be adjusted
         float rayDistance = coll.bounds.extents.y + marginOfError;
         int groundLayer = 1 << LayerMask.NameToLayer("Ground");
 
         //adjust rayOrigin to check collider's right edge
         rayOrigin.x += coll.bounds.size.x / 2;
         RaycastHit2D rightRay = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance, groundLayer);
+        Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.magenta, Time.deltaTime);
 
         //adjust rayOrigin to check collider's left edge
         rayOrigin.x -= coll.bounds.size.x;
         RaycastHit2D leftRay = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance, groundLayer);
+        Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.magenta, Time.deltaTime);
 
         return rightRay || leftRay;
     }
@@ -191,12 +195,11 @@ public class PlayerController : Actor
     //called by animator at the end of the death animation
     void Respawn()
     {
-        try { DontDestroyOnLoad(FindObjectOfType<DialogManager>().gameObject); }
-        catch (System.NullReferenceException) { }
+        DontDestroyOnLoad(dm.gameObject);
         SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Portal"))
         {
@@ -206,6 +209,15 @@ public class PlayerController : Actor
 
     void GoToNextLevel()
     {
-        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 1);
+        int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
+
+        if (nextScene == SceneManager.sceneCountInBuildSettings)
+        {
+            SceneManager.LoadSceneAsync(0);
+        }
+        else
+        {
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 1);
+        }
     }
 }

@@ -15,7 +15,7 @@ public class PlayerController : Actor
     bool canDash = true;
     const float dashDuration = 0.25f;
     const float dashCooldown = dashDuration * 2;
-    const float dashSpeed = 0.1f;
+    const float dashSpeed = 400f;
     IEnumerator dashCoroutine, dashCooldownCoroutine;
 
     float lastHorizontalInput;                       //technically a Vector1, used for dashing without a horizontal input

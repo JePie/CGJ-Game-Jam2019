@@ -191,6 +191,21 @@ public class PlayerController : Actor
     //called by animator at the end of the death animation
     void Respawn()
     {
+        try { DontDestroyOnLoad(FindObjectOfType<DialogManager>().gameObject); }
+        catch (System.NullReferenceException) { }
         SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Portal"))
+        {
+            GoToNextLevel();
+        }
+    }
+
+    void GoToNextLevel()
+    {
+        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
